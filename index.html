@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>متجر رقمي</title>
+  
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
       background: #f7f7ff;
+      color: #333;
     }
 
     header {
@@ -22,11 +24,87 @@
       z-index: 10;
     }
 
+    /* AI Section Styles */
+    .ai-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .ai-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ai-input-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .ai-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .ai-btn {
+      background: #ff9f43;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ai-btn:hover {
+      background: #f39c12;
+      transform: translateY(-2px);
+    }
+    
+    .ai-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .ai-result {
+      margin-top: 20px;
+      background: white;
+      color: #333;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: right;
+      min-height: 60px;
+      white-space: pre-wrap;
+      display: none; /* Hidden by default */
+      border-right: 5px solid #ff9f43;
+    }
+
     .products {
       display: grid;
       grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
       gap: 20px;
       padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .product {
@@ -116,6 +194,88 @@
       cursor: pointer;
       margin-top: 15px;
     }
+
+    /* Payment Modal Styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 200; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 25px;
+      border: 1px solid #888;
+      width: 90%; 
+      max-width: 400px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: relative;
+      top: 10%;
+    }
+
+    .close-modal {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      right: 20px;
+      top: 10px;
+    }
+
+    .close-modal:hover {
+      color: #000;
+    }
+    
+    /* Mock Payment Button Styles */
+    .paypal-mock-btn {
+      background-color: #ffc439;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 25px;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .paypal-mock-btn:hover {
+        background-color: #f4bb33;
+    }
+    
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+        display: none;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -126,6 +286,24 @@
   <div class="cart-btn" onclick="toggleCart()">🛒 السلة (<span id="cart-count">0</span>)</div>
 </header>
 
+<!-- AI Feature Section -->
+<div class="ai-section">
+  <div class="ai-container">
+    <h2>✨ جرب مساعد القهوة الذكي</h2>
+    <p>اكتب فكرة منشور لمقهاك وسيقوم الذكاء الاصطناعي بكتابته لك!</p>
+    
+    <div class="ai-input-group">
+      <input type="text" id="ai-topic" class="ai-input" placeholder="مثال: لاتيه بارد، قهوة الصباح، عرض الجمعة...">
+      <button class="ai-btn" onclick="generateCaption()">
+        <span id="btn-text">أنشئ المحتوى</span>
+        <span id="btn-icon">⚡</span>
+      </button>
+    </div>
+
+    <div id="ai-result" class="ai-result"></div>
+  </div>
+</div>
+
 <!-- Products -->
 <div class="products" id="product-container"></div>
 
@@ -134,14 +312,85 @@
   <h3>سلة التسوق</h3>
   <div id="cart-items"></div>
   <h3>المجموع: <span id="total">0</span> ر.س</h3>
-  <button class="checkout" onclick="checkout()">إتمام الشراء</button>
+  <button class="checkout" onclick="openPaymentModal()">إتمام الشراء</button>
+</div>
+
+<!-- Payment Modal -->
+<div id="payment-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+    <h2 style="margin-bottom: 5px;">الدفع الآمن</h2>
+    <p style="color: #666; margin-bottom: 20px;">المبلغ الإجمالي: <strong id="modal-total" style="color: #7c4dff; font-size: 1.2em;">0</strong> ر.س</p>
+    
+    <!-- Mock PayPal Button -->
+    <div id="payment-options">
+        <button class="paypal-mock-btn" onclick="processMockPayment()">
+            <i>🅿️</i> الدفع بواسطة PayPal
+        </button>
+        <p style="margin-top: 15px; font-size: 0.9em; color: #888;">(هذه نسخة تجريبية، لن يتم خصم أي مبلغ حقيقي)</p>
+    </div>
+    
+    <div id="payment-loading" class="loading-spinner"></div>
+  </div>
 </div>
 
 <script>
+  // --- Gemini API Configuration ---
+  const apiKey = ""; // API Key provided by environment
+
+  async function generateCaption() {
+    const topic = document.getElementById('ai-topic').value;
+    const resultBox = document.getElementById('ai-result');
+    const btn = document.querySelector('.ai-btn');
+    const btnText = document.getElementById('btn-text');
+
+    if (!topic) {
+      alert("الرجاء كتابة موضوع أولاً!");
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.innerText = "جاري الكتابة...";
+    resultBox.style.display = "none";
+    resultBox.innerText = "";
+
+    const prompt = `أنت خبير تسويق إبداعي للمقاهي في السعودية. اكتب منشور انستقرام جذاب وقصير (مع ايموجي وهاشتاجات) عن: ${topic}. استخدم لهجة سعودية بيضاء محببة.`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+
+      const generatedText = data.candidates[0].content.parts[0].text;
+      resultBox.style.display = "block";
+      resultBox.innerText = generatedText;
+
+    } catch (error) {
+      console.error("Error calling Gemini:", error);
+      alert("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. حاول مرة أخرى.");
+    } finally {
+      btn.disabled = false;
+      btnText.innerText = "أنشئ المحتوى";
+    }
+  }
+
+  // --- Store Logic ---
   const products = [
-    {id:1, name:"قالب موقع HTML", price:149, img:"https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=400"},
-    {id:2, name:"كتاب التسويق الرقمي", price:79, img:"https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400"},
-    {id:3, name:"حزمة أيقونات SVG", price:49, img:"https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=400"},
+    {id:4, name:"دليل المحتوى البصري للمقاهي", price:15, img:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400"},
   ];
 
   let cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -153,7 +402,6 @@
   function renderProducts() {
     const container = document.getElementById("product-container");
     container.innerHTML = "";
-
     products.forEach(p => {
       container.innerHTML += `
         <div class="product">
@@ -169,9 +417,10 @@
   }
 
   function renderCart() {
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
     document.getElementById("cart-count").innerText = cart.length;
-    document.getElementById("total").innerText =
-      cart.reduce((sum, item) => sum + item.price, 0);
+    document.getElementById("total").innerText = total;
+    document.getElementById("modal-total").innerText = total;
 
     const list = document.getElementById("cart-items");
     list.innerHTML = "";
@@ -195,10 +444,14 @@
     cart.push(product);
     saveCart();
     renderCart();
+    document.getElementById("cart").classList.add("open");
   }
 
   function removeItem(id) {
-    cart = cart.filter(p => p.id !== id);
+    const index = cart.findIndex(p => p.id === id);
+    if (index > -1) {
+      cart.splice(index, 1);
+    }
     saveCart();
     renderCart();
   }
@@ -207,11 +460,45 @@
     document.getElementById("cart").classList.toggle("open");
   }
 
-  function checkout() {
-    alert("✔ تم إتمام الشراء! سيتم إرسال الملفات إلى بريدك.");
-    cart = [];
-    saveCart();
-    renderCart();
+  // --- Payment Modal Functions ---
+  
+  function openPaymentModal() {
+    if(cart.length === 0) {
+        alert("السلة فارغة! قم بإضافة منتجات أولاً.");
+        return;
+    }
+    document.getElementById("payment-modal").style.display = "flex";
+    toggleCart(); 
+  }
+
+  function closePaymentModal() {
+    document.getElementById("payment-modal").style.display = "none";
+    // Reset view
+    document.getElementById("payment-options").style.display = "block";
+    document.getElementById("payment-loading").style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("payment-modal");
+    if (event.target == modal) {
+      closePaymentModal();
+    }
+  }
+
+  // --- Mock Payment Process ---
+  function processMockPayment() {
+    // Hide buttons, show loading
+    document.getElementById("payment-options").style.display = "none";
+    document.getElementById("payment-loading").style.display = "block";
+
+    // Simulate network delay
+    setTimeout(() => {
+        closePaymentModal();
+        alert('✔ تم الدفع بنجاح! سيتم إرسال "دليل المحتوى البصري للمقاهي" إلى بريدك الإلكتروني.');
+        cart = [];
+        saveCart();
+        renderCart();
+    }, 2000);
   }
 
   renderProducts();
